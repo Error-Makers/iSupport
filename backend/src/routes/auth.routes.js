@@ -3,7 +3,7 @@
 const express = require("express");
 const router = express.Router();
 //???
-const db = require('../db/models/users');
+const database = require('../db/models/index');
 
 const bcrypt = require('bcrypt');
 const basicAuth = require('../middleware/auth/basicAuth');
@@ -13,12 +13,12 @@ const check = require('check');
 // Routes:
 // signin,signup
 router.post('/signup', signupFunc);
-router.post('/signin', basicAuth(db.Users), signinFunc);
+router.post('/signin', basicAuth, signinFunc);
 //logout
 router.get('/:id/logout',UserControll.userLogout);
 
 // delete user
-router.delete('/:id',UserControll.DeleteUser);
+router.delete('/:id',acl('read'),UserControll.DeleteUser);
 
 // update user data
 router.put('/:id',UserControll.updateUser);
@@ -31,7 +31,7 @@ router.post('/:id/change',[check('password').matches(/^(?=.*\d)(?=.*[a-zA-Z]).{8
 async function signupFunc(request, response) {
     try {
         request.body.password = await bcrypt.hash(request.body.password, 5);
-        const record = await db.Users.create(request.body);
+        const record = await database.Users.create(request.body);
         response.status(201).json(record);
     } catch (error) {
         response.status(403).send("Error occurred");

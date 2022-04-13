@@ -1,8 +1,8 @@
 'use strict';
 const base64 = require("base-64");
 const bcrypt = require("bcrypt");
-const { User } = require("../models/index");
-const errorHandler = require("../500");
+const database = require("../../db/models/index");
+const errorHandler = require("../error-handlers/500");
 
 async function basicAuth(req, res, next) {
   if (req.headers["authorization"]) {
@@ -10,7 +10,7 @@ async function basicAuth(req, res, next) {
     let encodedPart = basicHeaderParts.pop();
     let decoded = base64.decode(encodedPart);
     let [username, password] = decoded.split(":");
-    const user = await User.findOne({ where: { username: username } });
+    const user = await database.users.findOne({ where: { username: username } });
     const valid = await bcrypt.compare(password, user.password);
     if (valid) {
       req.validUsername = username;
