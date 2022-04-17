@@ -3,15 +3,17 @@ const database = require("../../db/models/index");
 const router = express.Router();
 
 // Logged in user home routes
-router.get("/communities/:id/users", getUserCommunitiesList);
+router.get("/user/:id/communities", getUserCommunitiesList);
 
 //Get User Communities List
 async function getUserCommunitiesList(req, res) {
-  let cid = parseInt(req.params.id);
-  let fetchedUserCommunities = await database.communities.findOne({
-    where: { id: cid },
-    include: [database.users],
+  console.log("#### WORKING #####");
+  let id = parseInt(req.params.id);
+  let fetchedUserCommunities = await database.users_communities.findAll({
+    where: { user_id: id },
+    include: [database.communities],
   });
+
   if (fetchedUserCommunities) {
     res.status(200).json(fetchedUserCommunities);
   } else {

@@ -15,7 +15,7 @@ async function createCommunity(req, res) {
     let createdData = await database.communities.create(req.body);
     if (createdData) {
       let community = await database.communities.findOne({
-        where: { id: createdData.id },
+        where: { community_id: createdData.community_id },
         include: [database.users, database.posts],
       });
       let modName = await database.users.findOne({
@@ -24,7 +24,7 @@ async function createCommunity(req, res) {
       await database.moderators.create({
         mod_name: modName.dataValues.username,
         user_id: req.user.id,
-        community_id: community.dataValues.id,
+        community_id: community.dataValues.community_id,
       });
 
       res.status(200).json(community);
