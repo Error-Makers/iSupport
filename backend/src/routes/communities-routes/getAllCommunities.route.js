@@ -9,8 +9,7 @@ router.get("/communities", bearerAuth, aclAuth("read"), getAllCommunities);
 
 async function getAllCommunities(req, res) {
   let allData = await database.communities.findAll({
-    include: [database.users, database.posts],
-  });
+    include: {model :database.moderators ,include :[database.users] }});
   if (allData) {
     res.status(200).json(allData);
   } else {
