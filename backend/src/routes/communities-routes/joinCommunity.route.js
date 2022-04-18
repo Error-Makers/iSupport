@@ -26,7 +26,8 @@ if (findUser) {
   if (newUserAndCommunity) {
     // console.log(newUserAndCommunity);
     let user = await db.users_communities.findOne({where :{user_community_id :newUserAndCommunity.user_community_id},include :{model :db.users}});
-    res.status(200).send(`you have joined the community`);
+    res.status(200).json({message :`you have joined the community `,
+  user :user});
   }
 }
 

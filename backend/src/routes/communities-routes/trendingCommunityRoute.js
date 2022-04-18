@@ -6,13 +6,16 @@ const router = express.Router();
 router.get("/trending", trendingCommunity);
 
 async function trendingCommunity(req, res) {
-  let postsRaw = await database.posts.findAll({
-    attributes: ["community_id"],
-    group: "community_id",
-    order: [database.sequelize.fn("COUNT", database.sequelize.col("posts"))],
+  let postsRaw = await database.posts_communities_users.findAll({
+    attributes: ["user_community_id" ],
+    group: ["user_community_id"],
+    order: [database.sequelize.fn("COUNT", database.sequelize.col("post_id"))],
     limit: 5,
+    
   });
-  let trendingCommunitiesID = postsRaw.map((ele) => ele["community_id"]);
+  console.log(postsRaw);
+  let trendingCommunitiesID = postsRaw.map((ele) => ele["user_community_id"]);
+  console.log(trendingCommunitiesID);
   let communities = await database.communities.findAll();
   let returnedCommunitiesNames = communities
     .filter((ele) =>

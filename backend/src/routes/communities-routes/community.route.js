@@ -70,7 +70,7 @@ async function deleteCommunity(req, res) {
   if (fetchCommunity) {
     await database.communities.destroy({ where: { id: cid } });
     res.status(201).json({
-      // fetchCommunity: fetchCommunity,
+      fetchCommunity: fetchCommunity,
       message: "deleted successfully"
     });
   } else {
