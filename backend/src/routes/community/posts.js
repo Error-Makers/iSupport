@@ -32,16 +32,13 @@ async function createPostHandler(req, res) {
   let body = req.body;
 
   let user = await database.users.findByPk(body.author);
-  // console.log(user);
   if (user) {
     let createdPost = await database.posts.create(body);
-    // console.log(createdPost);
     if (createdPost) {
       let post = await database.posts.findOne({
         where: { id: createdPost.id },
         include: [database.users, database.communities],
       });
-      // console.log(post);
       res.status(200).json(post);
     } else {
       res.status(500).send(`the   post can not created`);

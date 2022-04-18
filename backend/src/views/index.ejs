@@ -14,7 +14,8 @@
     <script src="http://localhost:4444/socket.io/socket.io.js"></script>
     <!-- <script src="/chat-app/frontend.js"></script> -->
     <script>
-      let communityID = <%= community_id %>;
+      let communityID = <%= community_id %> 
+      
       console.log(communityID)
       const messageInput = document.querySelector("#message-input");
       const roomInput = document.querySelector("#room-input");
@@ -22,11 +23,12 @@
 
       const socket = io("http://localhost:4444");
       const username = "test-user";
+     
       socket.on("connect", () => {
         socket.emit("joinRoom", { username,communityID});
       });
       socket.on("message", (t) => {
-        displayMessage(t.text);
+        displayMessage(t);
       });
 
       form.addEventListener("submit", (e) => {
@@ -35,14 +37,17 @@
         const room = communityID;
 
         if (message === "") return;
-        displayMessage(message);
-        socket.emit("send-message", message, room);
+        // displayMessage(message);
+        socket.emit("message", message, room);
 
         messageInput.value = "";
       });
+      
       function displayMessage(message) {
+        
         const div = document.createElement("div");
-        div.textContent = message;
+        // message.time = `${message.username} @ ${message.time}: ${message.tex}`
+        div.textContent = `${message.username} ${message.time}: ${message.text}`;
         document.querySelector("#message-container").append(div);
       }
     </script>

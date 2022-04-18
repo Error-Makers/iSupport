@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "NODE_ENV=production node index.js",
+    "start": "NODE_ENV=production node index.js ",
     "test": "NODE_ENV=test jest"
   },
   "author": "",
@@ -30,5 +30,15 @@
   "devDependencies": {
     "jest": "^27.5.1",
     "supertest": "^6.2.2"
+   
   }
 }
+
+
+
+
+
+
+
+
+

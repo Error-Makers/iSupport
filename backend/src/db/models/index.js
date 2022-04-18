@@ -52,6 +52,7 @@ db.communities.belongsToMany(db.users, {
   foreignKey: "community_id",
 });
 
+
 db.users.hasMany(db.posts, { foreignKey: "author" });
 db.posts.belongsTo(db.users, { foreignKey: "author" });
 
