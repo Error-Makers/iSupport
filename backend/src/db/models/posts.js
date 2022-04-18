@@ -10,15 +10,7 @@ const Posts = (db, DataTypes) =>
       type: DataTypes.STRING,
       allowNull: false,
     },
-    author: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      // foreginKey: true,
-    },
-    community_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
+   
   });
 
 module.exports = Posts;

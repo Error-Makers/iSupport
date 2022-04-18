@@ -6,52 +6,59 @@ const aclAuth = require("../../middleware/auth/aclAuth");
 const bearerAuth = require("../../middleware/auth/bearerAuth");
 
 // Posts Route
-router.post("/posts", bearerAuth, aclAuth("read"), createPostHandler);
-router.get("/posts", bearerAuth, aclAuth("delete all"), getPostsHandler);
+router.post("/posts/community/:cid", bearerAuth, aclAuth("read"), createPostHandler);
+router.get("/posts", bearerAuth, aclAuth("read"), getPostsHandler);
 router.get("/posts/:id", bearerAuth, aclAuth("read"), getSinglePostsHandler);
 router.put("/posts/:id", bearerAuth, aclAuth("read"), updatePostInfoHandler);
 router.delete("/posts/:id", bearerAuth, aclAuth("read"), deletePostHandler);
+
 router.get(
-  "/posts/author",
-  bearerAuth,
-  aclAuth("read"),
-  getPostsFromUserHandler
-);
-router.get(
-  "/posts/community/:id",
+  "/posts/community/:cid",
   bearerAuth,
   aclAuth("read"),
   getPostsFromCommunityHandler
 );
-router.get("/posts/", bearerAuth, aclAuth("read"), getUserPostsFromCommunity);
+router.get("/posts/user/:cid", bearerAuth, aclAuth("read"), getUserPostsFromCommunity);
 
 // Controllers
 
 //Create new Post
 async function createPostHandler(req, res) {
+  let cid = parseInt(req.params.cid);
   let body = req.body;
 
-  let user = await database.users.findByPk(body.author);
-  if (user) {
-    let createdPost = await database.posts.create(body);
-    if (createdPost) {
+  // let user = await database.users.findByPk(req.user.id);
+  let community = await database.communities.findByPk(cid);
+  // console.log(user);
+  if (community) {
+    // console.log(createdPost);
+    let user_community = await database.users_communities.findOne({
+      where: {
+        user_id: req.user.id, community_id: community.id
+      }
+    });
+    if (user_community) {
+      let createdPost = await database.posts.create(body);
+      await database.posts_communities_users.create({ post_id: createdPost.id, user_community_id: user_community.user_community_id });
+
       let post = await database.posts.findOne({
         where: { id: createdPost.id },
-        include: [database.users, database.communities],
+        include: { model: database.users_communities, include: [database.users] },
       });
       res.status(200).json(post);
     } else {
-      res.status(500).send(`the   post can not created`);
+      res.status(500).send(`the post can not created you should join to this community to post :)`);
     }
   } else {
-    res.status(500).send(`To do that you should register`);
+    res.status(500).send(`The id ${cid} of community  isn't exist `);
+    // res.status(500).send(`To do that you should register`);
   }
 }
 
 //Get All Posts
 async function getPostsHandler(req, res) {
   let fetchedPost = await database.posts.findAll({
-    include: [database.users, database.communities],
+    include: [{ model: database.users_communities, include: [database.users] }, { model: database.users_communities, include: [database.communities] }]
   });
   res.status(200).json(fetchedPost);
 }
@@ -60,7 +67,7 @@ async function getSinglePostsHandler(req, res) {
   let pid = parseInt(req.params.id);
   let fetchedPost = await database.posts.findOne({
     where: { id: pid },
-    include: [database.users, database.communities],
+    include: [{ model: database.users_communities, include: [database.users] }, { model: database.users_communities, include: [database.communities] }]
   });
   if (fetchedPost) {
     res.status(200).json(fetchedPost);
@@ -70,19 +77,21 @@ async function getSinglePostsHandler(req, res) {
 }
 //Update single Posts
 async function updatePostInfoHandler(req, res) {
-  let pid = req.params.id;
+  let pid = parseInt(req.params.id);
   // console.log('req.user.id', req.user.id);
 
-  let toUpdate = await database.posts.findOne({ where: { id: pid } });
+  let toUpdate = await database.posts.findOne({
+    where: { id: pid },
+    include: [{ model: database.users_communities, include: [database.users] }, { model: database.users_communities, include: [database.communities] }]
+  });
 
   if (toUpdate) {
-    if (toUpdate.author === req.user.id) {
+    let author = toUpdate.users_communities[0].user.id;
+    if (author === req.user.id) {
       let updatedPost = await toUpdate.update(req.body);
       res.status(201).json(updatedPost);
     } else {
-      res
-        .status(204)
-        .send(`You can't edite this post because you aren't the author `);
+      res.status(204).json(`You can't edite this post because you aren't the author `);
     }
   } else {
     res.status(500).send(`the  post id ${pid} isn\'t exist`);
@@ -92,17 +101,20 @@ async function updatePostInfoHandler(req, res) {
 async function deletePostHandler(req, res) {
   let pid = parseInt(req.params.id);
 
-  let fetchedPost = await database.posts.findOne({ where: { id: pid } });
+  let fetchedPost = await database.posts.findOne({
+    where: { id: pid },
+    include: [{ model: database.users_communities, include: [database.users] }, { model: database.users_communities, include: [database.communities] }]
+  });
   if (fetchedPost) {
-    if (fetchedPost.author === req.user.id) {
+
+    let author = fetchedPost.users_communities[0].user.id;
+    //console.log("authorauthorauthorauthor",author);
+    //console.log("req.user.id",req.user.id);
+    if (author === req.user.id) {
       await database.posts.destroy({ where: { id: pid } });
-      res
-        .status(201)
-        .json({ fetchedPost: fetchedPost, message: "deleted successfully" });
+      res.status(201).json({ fetchedPost: fetchedPost, message: "deleted successfully" });
     } else {
-      res
-        .status(204)
-        .send(`You can't delete this post because you aren't the author `);
+      res.status(204).json(`You can't delete this post because you aren't the author `);
     }
   } else {
     res.status(500).send(`the  post id ${pid} isn\'t exist`);
@@ -110,27 +122,14 @@ async function deletePostHandler(req, res) {
 }
 
 //Get All Posts from a single user from all communities
-async function getPostsFromUserHandler(req, res) {
-  // let uid = parseInt(req.params.id);
-
-  let fetchedPosts = await database.posts.findAll({
-    where: { author: req.user.id },
-    include: [database.users, database.communities],
-  });
-  if (fetchedPosts) {
-    res.status(200).json(fetchedPosts);
-  } else {
-    res.status(500).send(`you does't have any posts`);
-  }
-}
 
 //Get All Posts from a single user from a single community
 async function getUserPostsFromCommunity(req, res) {
-  let uid = parseInt(req.body.author);
-  let cid = parseInt(req.body.community_id);
-  let fetchedPost = await database.posts.findAll({
-    where: { author: uid, community_id: cid },
-    include: [database.users, database.communities],
+
+  let cid = parseInt(req.params.cid);
+  let fetchedPost = await database.users.findAll({
+    where: { id: req.user.id },
+    include: { model: database.users_communities, include: { model: database.posts_communities_users, include: [database.posts] } },
   });
   if (fetchedPost) {
     res.status(200).json(fetchedPost);
@@ -143,10 +142,10 @@ async function getUserPostsFromCommunity(req, res) {
 
 //Get All Posts from a single community
 async function getPostsFromCommunityHandler(req, res) {
-  let cid = parseInt(req.params.id);
-  let fetchedPost = await database.posts.findAll({
-    where: { community_id: cid },
-    include: [database.users],
+  let cid = parseInt(req.params.cid);
+  let fetchedPost = await database.communities.findAll({
+    where: { id: cid },
+    include: { model: database.users_communities, include: [{ model: database.posts_communities_users, include: [database.posts] }, { model: database.users }] },
   });
   if (fetchedPost) {
     res.status(200).json(fetchedPost);

@@ -2,9 +2,11 @@
 
 
 const Moderators = (db, DataTypes) => db.define('moderators', {
-    mod_name: {
-        type: DataTypes.STRING,
-        allowNull: false,
+    mod_id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false
 
     },
 
