@@ -4,12 +4,15 @@ const express = require("express");
 const database = require("../../db/models/index"); //just fix the path
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const aclAuth = require("../../middleware/auth/aclAuth");
+const bearerAuth = require("../../middleware/auth/bearerAuth");
+
 // Users Route
-router.post("/users", postUsersHandler);
-router.get("/users", getUsersHandler);
-router.get("/users/:id", getSingleUsersHandler);
-router.put("/users/:id", updateUserInfoHandler);
-router.delete("/users/:id", deleteUserHandler);
+router.post("/users",bearerAuth, aclAuth("create"), postUsersHandler);
+router.get("/users",bearerAuth, aclAuth("read"), getUsersHandler);
+router.get("/users/:id",bearerAuth, aclAuth("read"), getSingleUsersHandler);
+router.put("/users/:id",bearerAuth, aclAuth("edit all"), updateUserInfoHandler);
+router.delete("/users/:id",bearerAuth, aclAuth("delete all"), deleteUserHandler);
 
 // Controllers
 
