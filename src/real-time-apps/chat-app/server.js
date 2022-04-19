@@ -8,13 +8,12 @@ const {
   leveCommunity,
   getUserCommunity,
 } = require("./user");
-
-const io = require("socket.io")(4444, {
+const { http } = require("../../server");
+const io = require("socket.io")(http, {
   cors: {
     origin: "*",
   },
 });
-// const chatConnection = io.connect(`${host}/chat`);
 
 // change this one to add the community name from the database
 let chatBox = "community";
@@ -25,8 +24,8 @@ function getCurrentTime() {
   let chatTime = hour + ":" + min + " ";
   return chatTime;
 }
-// when clinet get connect run
-io.on("connection", (socket) => {
+
+module.exports = io.on("connection", (socket) => {
   console.log("connected");
   socket.on("joinRoom", ({ username, communityID }) => {
     const user = userJoin(socket.id, username, communityID);

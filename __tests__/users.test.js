@@ -20,7 +20,7 @@ describe("users routes", () => {
     expect(response.status).toEqual(200);
   });
   it("Get single user", async () => {
-    const response = await request.get("/users/1");
+    const response = await request.get("/user/1");
     expect(response.status).toEqual(500);
   });
 });

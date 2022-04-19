@@ -19,12 +19,8 @@ describe("auth routes", () => {
     const response = await request.get("/communities");
     expect(response.status).toEqual(200);
   });
-  // it("Get trending communities", async () => {
-  //   const response = await request.get("/trending");
-  //   expect(response.status).toEqual(200);
-  // });
   it("Get a specific community", async () => {
-    const response = await request.get("//community/1");
+    const response = await request.get("/community/1");
     expect(response.status).toEqual(200);
   });
   it("Create community", async () => {
