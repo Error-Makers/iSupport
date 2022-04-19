@@ -21,6 +21,6 @@ describe("users routes", () => {
   });
   it("Get single user", async () => {
     const response = await request.get("/user/1");
-    expect(response.status).toEqual(200);
+    expect(response.status).toEqual(500);
   });
 });
