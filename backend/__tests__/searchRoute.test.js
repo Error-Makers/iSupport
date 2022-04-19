@@ -11,7 +11,7 @@ describe('testing search route',()=>{
     afterAll( async () =>{
         await db.sequelize.drop();
     });
-    it('testing get all img',async()=>{
+    it('testing search route',async()=>{
         const response = await request.get('/search').send({
             community_name:'test-commuinty'
         })
