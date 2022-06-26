@@ -1,20 +1,19 @@
-const express = require("express");
-const database = require("../../db/models/index");
+const express = require('express');
+const database = require('../../db/models/index');
 const router = express.Router();
 
 //Get Community Leaderboard by Community ID
-router.get("/community/:id/leaderboard", getCommunityLeaderboard);
-
+router.get('/community/:id/leaderboard', getCommunityLeaderboard);
 
 async function getCommunityLeaderboard(req, res) {
   let id = parseInt(req.params.id);
   const result = await database.posts.findAll({
     attributes: [
-      "author",
-      database.sequelize.fn("COUNT", database.sequelize.col("author")),
+      'author',
+      database.sequelize.fn('COUNT', database.sequelize.col('author')),
     ],
-    group: ["author"],
-    order: [database.sequelize.fn("COUNT", database.sequelize.col("author"))],
+    group: ['author'],
+    order: [database.sequelize.fn('COUNT', database.sequelize.col('author'))],
     limit: 5,
     where: { community_id: id },
   });

@@ -1,58 +1,61 @@
-"use strict";
-const express = require("express");
-const database = require("../../db/models/index");
+'use strict';
+const express = require('express');
+const database = require('../../db/models/index');
 const router = express.Router();
-const aclAuth = require("../../middleware/auth/aclAuth");
-const bearerAuth = require("../../middleware/auth/bearerAuth");
+const aclAuth = require('../../middleware/auth/aclAuth');
+const bearerAuth = require('../../middleware/auth/bearerAuth');
 
 // Posts Route
 router.post(
-  "/community/:id/create-post",
+  '/community/:id/create-post',
   bearerAuth,
-  aclAuth("read"),
-  createPostHandler
+  aclAuth('read'),
+  createPostHandler,
+);
+
+router.get('/posts', getAllPostsHandler);
+
+router.get(
+  '/community/:id/get-posts',
+  bearerAuth,
+  aclAuth('read'),
+  getPostsHandler,
 );
 router.get(
-  "/community/:id/get-posts",
+  '/community/:id/search',
   bearerAuth,
-  aclAuth("read"),
-  getPostsHandler
-);
-router.get(
-  "/community/:id/search",
-  bearerAuth,
-  aclAuth("read"),
-  getSinglePostsHandler
+  aclAuth('read'),
+  getSinglePostsHandler,
 );
 router.patch(
-  "/update-post/:id",
+  '/update-post/:id',
   bearerAuth,
-  aclAuth("update"),
-  updatePostInfoHandler
+  aclAuth('update'),
+  updatePostInfoHandler,
 );
 router.delete(
-  "/community/:id/delete-post/:postId",
+  '/community/:id/delete-post/:postId',
   bearerAuth,
-  aclAuth("read"),
-  deletePostHandler
+  aclAuth('read'),
+  deletePostHandler,
 );
 router.get(
-  "/user/:id/get-all-posts",
+  '/user/:id/get-all-posts',
   bearerAuth,
-  aclAuth("read"),
-  getPostsFromUserHandler
+  aclAuth('read'),
+  getPostsFromUserHandler,
 );
 router.get(
-  "/posts/community/:id",
+  '/posts/community/:id',
   bearerAuth,
-  aclAuth("read"),
-  getPostsFromCommunityHandler
+  aclAuth('read'),
+  getPostsFromCommunityHandler,
 );
 router.get(
-  "/user/:id/community/:cid",
+  '/user/:id/community/:cid',
   bearerAuth,
-  aclAuth("read"),
-  getUserPostsFromCommunity
+  aclAuth('read'),
+  getUserPostsFromCommunity,
 );
 
 // Controllers
@@ -86,6 +89,12 @@ async function createPostHandler(req, res) {
 }
 
 //Get All Posts
+async function getAllPostsHandler(req, res) {
+  let fetchedPost = await database.posts.findAll();
+  res.status(200).json(fetchedPost);
+}
+
+//Get All Posts in a community
 async function getPostsHandler(req, res) {
   let communityId = req.params.id;
   let fetchedPost = await database.posts.findAll({
@@ -128,9 +137,9 @@ async function updatePostInfoHandler(req, res) {
       toUpdate.post_body = updateValues.post_body;
       await toUpdate.save();
     }
-    res.status(200).send("user updated");
+    res.status(200).send('user updated');
   }
-  res.status(200).send("error");
+  res.status(200).send('error');
 }
 //Delete single Posts
 async function deletePostHandler(req, res) {
@@ -143,7 +152,7 @@ async function deletePostHandler(req, res) {
       await database.posts.destroy({ where: { id: postId } });
       res
         .status(201)
-        .json({ fetchedPost: fetchedPost, message: "deleted successfully" });
+        .json({ fetchedPost: fetchedPost, message: 'deleted successfully' });
     } else {
       res
         .status(204)
